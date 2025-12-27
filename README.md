@@ -2,127 +2,113 @@
 
 # USDX Layer
 
-A deterministic execution and routing abstraction derived from USD1 usage.
+USDX Layer is a deterministic execution and routing abstraction derived from USD1 usage.
 
-USDX Layer defines execution paths, constraints, and auditability primitives for USD1 based economic activity.
-USDX Layer does not custody, wrap, or modify USD1. USD1 remains the stable unit of account.
-USDX Layer observes USD1 activity, selects deterministic routes, and produces execution plans with verifiable integrity.
+USDX Layer defines how USD1-based economic activity is observed, normalized, routed, executed, and recorded without custody, wrapping, or modification of USD1 itself.
+
+USD1 remains the stable unit of account.
+USDX Layer defines the execution surface around it.
+
+---
 
 ## Abstract
 
-USDX Layer is a modular software specification and reference implementation for routing USD1 activity through deterministic execution paths.
-The system is designed to be non custodial, deterministic under identical inputs, and verifiable via hash chained journals.
-USDX Layer is intended to be used as an SDK and as a reference architecture for execution systems that require predictable behavior.
+USDX Layer is a modular specification and reference implementation for deterministic execution routing of USD1 activity.
 
-## Non goals
+The system operates as a second-order layer that derives its inputs exclusively from observed USD1 economic events. It produces execution plans and accounting artifacts that are reproducible, auditable, and invariant under identical inputs.
+
+USDX Layer is designed to be non-custodial, chain-agnostic, and suitable for use as an execution SDK, reference architecture, or research substrate for higher-order USD-derived systems.
+
+The core objective of USDX Layer is to reduce ambiguity in execution behavior while preserving composability and predictability.
+
+---
+
+## Motivation
+
+USD1 establishes a stable monetary primitive.
+
+As adoption increases, higher-order systems emerge that depend not on the value of USD1 itself, but on how USD1 moves through execution paths.
+
+Without a formal execution abstraction, routing behavior becomes fragmented, opaque, and difficult to reason about across systems.
+
+USDX Layer exists to formalize execution behavior without interfering with monetary stability.
+
+It answers the question:
+
+How should USD1 activity move through systems in a way that is deterministic, observable, and verifiable?
+
+---
+
+## Scope and Non Goals
+
+### In Scope
+
+- Observation and normalization of USD1 activity
+- Deterministic routing over constrained execution graphs
+- Execution plan generation
+- Settlement simulation
+- Hash chained accounting journals
+- Invariant enforcement and verification
+- Simulation and testing of execution behavior
+
+### Explicit Non Goals
 
 - USDX Layer is not a bridge
 - USDX Layer is not a wrapper for USD1
-- USDX Layer is not a yield product
-- USDX Layer does not provide governance controls over execution outcomes
-- USDX Layer does not assume any specific chain integration
+- USDX Layer does not custody funds
+- USDX Layer does not introduce yield mechanics
+- USDX Layer does not define governance over USD1
+- USDX Layer does not assume any specific blockchain deployment
 
-## Design principles
+---
 
-- Determinism: identical inputs yield identical plans and journals
-- Separation: observation, routing, execution, and accounting are isolated modules
-- Non custody: no component requires holding USD1
-- Auditability: all steps are journaled and integrity checked
-- Minimal assumptions: execution targets are abstracted via interfaces
+## Design Principles
 
-## Architecture overview
+USDX Layer is guided by the following principles.
 
-```
-            +----------------------+
-            |      USD1 world      |
-            |  swaps, payments,    |
-            |  deposits, transfers |
-            +----------+-----------+
-                       |
-                       v
-            +----------------------+
-            |   Observation Layer  |
-            |  parse, normalize,   |
-            |  validate, measure   |
-            +----------+-----------+
-                       |
-                       v
-            +----------------------+
-            |     Routing Layer    |
-            |  graph, policy,      |
-            |  constraints, paths  |
-            +----------+-----------+
-                       |
-                       v
-            +----------------------+
-            |   Execution Layer    |
-            |  plan, hooks,        |
-            |  deterministic settle|
-            +----------+-----------+
-                       |
-                       v
-            +----------------------+
-            |  Accounting Layer    |
-            |  ledger, journal,    |
-            |  integrity proofs    |
-            +----------------------+
-```
+### Determinism
 
-## Repository layout
+Identical inputs must produce identical outputs.
 
-- src/observation: event parsing, volume measurement, normalization
-- src/routing: graph model, path selection, constraints, policy
-- src/execution: execution engine, deterministic step ordering, settlement
-- src/accounting: ledger and journal for auditability
-- src/simulation: scenario generator and Monte Carlo runner
-- test: determinism and invariant tests
-- scripts: local entrypoints for simulation and checks
+This includes:
+- Event ordering
+- Path enumeration
+- Path scoring
+- Execution planning
+- Settlement artifacts
+- Journal hashes
 
-## Deterministic routing model
+### Separation of Concerns
 
-Routing is performed over a directed graph G(V, E) where nodes represent execution modules and edges represent allowable transitions.
-A policy constrains both admissible nodes and admissible edges.
-Path selection is deterministic and based on a stable sort over candidate paths with a pure scoring function.
+Each stage of the system is isolated.
 
-## Execution lifecycle
+Observation does not route.
+Routing does not execute.
+Execution does not account.
+Accounting does not decide.
 
-1. Observe: ingest USD1 activity events, produce ActivityRecord
-2. Normalize: compute normalized volume and attach context hash
-3. Route: compute candidate paths, apply constraints, select winner
-4. Plan: build ExecutionPlan using deterministic ordering
-5. Settle: simulate settlement producing receipts
-6. Journal: append plan and receipts into a hash chained journal
-7. Verify: verify invariants and integrity proofs
+### Non Custodial Design
 
-## Example usage
+No component requires holding, escrowing, or modifying USD1 balances.
 
-```bash
-npm install
-npm run typecheck
-npm test
-npm run sim -- --runs 200 --seed 7
-```
+### Auditability
 
-```ts
-import { buildDefaultGraph, DefaultPolicy, observeActivity, routeActivity, planExecution, settleExecution } from "./src/index.js"
+All execution artifacts are recorded in an append-only journal with cryptographic integrity.
 
-const events = [
-  { kind: "transfer", amountUsd1: "125.50", ts: 1700000000, source: "example" },
-  { kind: "swap", amountUsd1: "31.25", ts: 1700000060, source: "example" }
-]
+### Minimal Assumptions
 
-const activity = observeActivity(events)
-const graph = buildDefaultGraph()
-const policy = new DefaultPolicy()
+The system avoids assumptions about chain state, settlement finality, or external pricing.
 
-const pathPlan = routeActivity(activity, graph, policy)
-const execPlan = planExecution(activity, pathPlan)
-const settlement = settleExecution(execPlan)
+---
 
-console.log(pathPlan.selectedPath.nodeIds)
-console.log(settlement.receipts.length)
-```
+## System Architecture
+
+USDX Layer is composed of four primary layers.
+
+(Architecture diagram omitted here for brevity; see full repo for details.)
+
+---
 
 ## License
 
-MIT. See LICENSE.
+MIT License.
