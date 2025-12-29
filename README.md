@@ -1,6 +1,6 @@
-# USD1 Routing
+# USDX Layer
 
-![USDX Layer](./usd1routing.png)
+![USDX Layer](./usdxlayer.png)
 
 ## Abstract
 
